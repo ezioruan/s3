@@ -81,7 +81,7 @@ func (s3 *S3) signRequest(req *http.Request) {
 	}
 
 	if req.Header.Get("Date") == "" {
-		req.Header.Set("Date", time.Now().Format(time.RFC1123))
+		req.Header.Set("Date", GetAwsDate())
 	}
 
 	authStr := strings.Join([]string{
@@ -146,6 +146,24 @@ func (s3 *S3) putMultipart(r io.Reader, size int64, path string, contentType str
 	}
 
 	return mp.Complete(contentType)
+}
+
+
+func GetUtcDate() string {
+	return time.Now().UTC().Format("20060102")
+}
+
+
+func GetAwsUtcTime() string {
+	return time.Now().UTC().Format("20060102T150405Z")
+}
+
+func GetAwsDate() string {
+	nowTime := time.Now().UTC()
+	awsDate := fmt.Sprintf("%s, %d %s %04d %02d:%02d:%02d GMT", fmt.Sprintf("%s", nowTime.Weekday())[:3],
+		nowTime.Day(), fmt.Sprintf("%s", nowTime.Month())[:3], nowTime.Year(), nowTime.Hour(), nowTime.Minute(),
+		nowTime.Second())
+	return awsDate
 }
 
 // Put uploads content to S3. The length of r must be passed as size. md5sum optionally contains
